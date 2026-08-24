@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo HASZCZE - wektory</title>
+<style>
+  :root {
+    --hs-yellow: #F5C400;
+    --hs-black: #1A1A1A;
+    --hs-dark: #2A2A2A;
+    --hs-light: #F5F5F5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--hs-black);
+    color: var(--hs-light);
+    font-family: system-ui, sans-serif;
+  }
+  header {
+    padding: 24px 16px 8px;
+    text-align: center;
+  }
+  h1 { margin: 0; color: var(--hs-yellow); font-size: 1.6rem; }
+  header p { margin: 6px 0 0; opacity: .7; font-size: .9rem; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--hs-dark);
+    border: 1px solid #4A4A4A55;
+    display: flex;
+    flex-direction: column;
+  }
+  .card h2 {
+    margin: 0;
+    padding: 10px 14px;
+    font-size: .95rem;
+    font-weight: 600;
+  }
+  .frame {
+    position: relative;
+    aspect-ratio: 1;
+    background: #fff;
+  }
+  .frame.dark { background: var(--hs-black); }
+  .frame img, .frame .mask {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .frame img { object-fit: contain; }
+  .mask {
+    background: #e11;
+    -webkit-mask: url(haszcze-logo.svg) center / contain no-repeat;
+    mask: url(haszcze-logo.svg) center / contain no-repeat;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px 14px;
+    margin-top: auto;
+  }
+  .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--hs-yellow);
+    color: var(--hs-black);
+    font-weight: 700;
+    font-size: .85rem;
+    text-decoration: none;
+  }
+  .btn:hover { background: #FDE047; }</style>
+</head>
+<body>
+<header>
+  <h1>Logo HASZCZE - Hackerspace Szczecin</h1>
+  <p>Oryginał i wektorowe wersje logo do pobrania</p>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h2>Oryginał PNG (1254x1254)</h2>
+    <div class="frame"><img src="haszcze-logo.png" alt="Oryginalne logo PNG"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo.png" download>Pobierz PNG</a></div>
+  </div>
+
+  <div class="card">
+    <h2>Wektor SVG - czarny, przezroczyste tło</h2>
+    <div class="frame"><img src="haszcze-logo.svg" alt="Wektor SVG czarny"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo.svg" download>Pobierz SVG</a></div>
+  </div>
+
+  <div class="card">
+    <h2>Inny wariant kolorystyczny</h2>
+    <div class="frame">
+      <div class="mask"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Żółty na czarnym (paleta strony)</h2>
+    <div class="frame dark"><img src="haszcze-logo-yellow-on-black.svg" alt="Wektor żółty na czarnym"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo-yellow-on-black.svg" download>Pobierz SVG</a></div>
+  </div>
+
+  <div class="card">
+    <h2>Paski żółto-czarne (jak stare logo)</h2>
+    <div class="frame"><img src="haszcze-logo-stripes.svg" alt="Wektor w paski żółto-czarne"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo-stripes.svg" download>Pobierz SVG</a></div>
+  </div>
+</div>
+</body>
+</html>
