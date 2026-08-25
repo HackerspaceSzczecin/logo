@@ -1,7 +1,7 @@
 # Emblemat do sygnatury e-mail
 
 Wersje logo przycięte pod generator sygnatur e-mail
-([hssz/generator-sygnatury-e-mail-dla-haszcze](https://gitlab.com/hssz/generator-sygnatury-e-mail-dla-haszcze),
+([HackerspaceSzczecin/generator-stopki-haszcze](https://github.com/HackerspaceSzczecin/generator-stopki-haszcze),
 działa pod <https://haszcze.eu/projects/email-signature-generator/>).
 
 To **sam emblemat** (dźwig + haszcze), bez napisu "Hackerspace Szczecin" -
@@ -22,7 +22,7 @@ zdublowany.
 | ------- | ---- |
 | ten folder | źródło prawdy |
 | `https://haszcze.eu/brand/haszcze-emblem.png` | **produkcja** - każda wygenerowana sygnatura linkuje ten adres |
-| repo strony, `public/brand/` | skąd powyższy adres jest serwowany |
+| repo strony, `public/brand/` | serwuje ten adres; generowane z tego repo |
 | repo generatora, `assets/` | kopia robocza (podgląd na stronie generatora, favicon) |
 
 Adres `/brand/` jest wypalony w sygnaturach już wklejonych do klientów
@@ -63,6 +63,10 @@ albo `rsvg-convert -w 150 -h 127 haszcze-emblem.svg -o haszcze-emblem.png`.
 ## Odtwarzanie po awarii
 
 Jeśli `https://haszcze.eu/brand/haszcze-emblem.png` przestanie odpowiadać:
-wgraj `haszcze-emblem.png` z tego folderu do `public/brand/` w repo strony
-(GitLab `hssz/sedinaspace.eu`) i zdeployuj stronę zgodnie z jej instrukcją
-deployu. Nic więcej nie trzeba - sygnatury wskazują stały adres.
+w repo strony ([HackerspaceSzczecin/haszcze-website](https://github.com/HackerspaceSzczecin/haszcze-website))
+podbij wskaźnik submodułu `vendor/haszcze-logo` na aktualny commit tego repo,
+a potem zbuduj i zdeployuj stronę zgodnie z jej instrukcją deployu -
+`scripts/prebuild.mjs` sam wyłoży `haszcze-emblem.png` pod `/brand/`.
+Nie kopiuj pliku ręcznie do `public/brand/`: ten katalog jest generowany
+przy każdym buildzie, więc ręczna wrzutka zostanie nadpisana. Nic więcej
+nie trzeba - sygnatury wskazują stały adres.
