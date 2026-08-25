@@ -8,6 +8,7 @@ krawędzi).
 
 - `haszcze-logo.png` - oryginalny rastrowy plik źródłowy (1254x1254)
 - `haszcze-logo.svg` - dokładny wektor, czarny `#1A1A1A` na przezroczystym tle
+- `haszcze-logo-supported-A.svg` - dokładny wektor, czarny `#1A1A1A` na przezroczystym tle z poprzeczką podtrzymującą literę `A`
 - `haszcze-logo-yellow-on-black.svg` - żółty `#F5C400` na tle `#1A1A1A`
   (paleta space.szczecin.pl)
 - `haszcze-logo-stripes.svg` - emblemat wypełniony ukośnymi pasami
