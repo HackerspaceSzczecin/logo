@@ -14,6 +14,10 @@ krawędzi).
   żółto-czarnymi (nawiązanie do starego logo), napis jednolity czarny
 - `preview.html` - strona z podglądem wszystkich wersji i przyciskami
   pobierania
+- `email-signature/` - emblemat przycięty pod generator sygnatur e-mail
+  (bez napisu); **uwaga:** PNG stamtąd jest hostowany na
+  `haszcze.eu/brand/` i linkowany z wysłanych maili - szczegóły w
+  [email-signature/README.md](email-signature/README.md)
 
 ## Kolory
 
