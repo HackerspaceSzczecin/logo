@@ -23,6 +23,9 @@ osób (i agentów) pracujących nad tym repo.
   (bez napisu); **uwaga:** PNG stamtąd jest hostowany na
   `haszcze.eu/brand/` i linkowany z wysłanych maili - szczegóły w
   [email-signature/README.md](email-signature/README.md)
+- `stl/` - modele do druku 3D (`.3mf`) plus generowana przeglądarka
+  `stl/viewer.html` i rendery `stl/previews/*.png`, patrz
+  [stl/README.md](stl/README.md)
 - `scripts/` - `regen.py` odtwarza wszystkie powyższe pliki pochodne
   z dwóch źródłowych wektorów, patrz niżej
 

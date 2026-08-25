@@ -42,3 +42,12 @@ zniknie, i jak go odtworzyć w razie awarii.
   pustą przerwę między nimi - w razie wątpliwości sprawdź bboxy
   podścieżek (patrz historia commitów tego repo dla przykładu takiej
   weryfikacji).
+
+## Modele 3D w `stl/`
+
+`.3mf` to źródła (projekty Bambu Studio, edytowane w slicerze).
+`stl/viewer.html` i `stl/previews/*.png` są generowane przez
+`scripts/stl_preview.py` - nie edytuj ich ręcznie, po podmianie modelu
+przepuść skrypt (`--png` dorzuca rendery). Szablon strony leży w
+`scripts/stl_viewer.html.tmpl`; skrypt tylko wstrzykuje w niego dane
+siatek. Szczegóły: `stl/README.md`.

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HASZCZE - modele 3D</title>
+<style>
+:root{--yellow:#F5C400;--black:#1A1A1A;--panel:#232323;--line:#3a3a3a;--dim:#9a9a9a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--black);color:#eee;
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{display:flex;height:100%}
+#side{width:290px;flex:0 0 290px;background:var(--panel);border-right:1px solid var(--line);
+  padding:18px;overflow:auto}
+#side h1{margin:0 0 2px;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow)}
+#side .sub{margin:0 0 18px;font-size:12px;color:var(--dim)}
+.mbtn{display:block;width:100%;text-align:left;margin-bottom:8px;padding:10px 12px;cursor:pointer;
+  background:#1c1c1c;color:#eee;border:1px solid var(--line);border-radius:6px;font:inherit}
+.mbtn:hover{border-color:#5a5a5a}
+.mbtn.on{border-color:var(--yellow);color:var(--yellow);background:#242017}
+.mbtn small{display:block;color:var(--dim);font-size:11px}
+.mbtn.on small{color:#b9a24d}
+h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  margin:22px 0 8px;font-weight:600}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px}
+dt{color:var(--dim)}
+dd{margin:0;font-variant-numeric:tabular-nums;word-break:break-word}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.opts button{padding:6px 10px;background:#1c1c1c;color:#ccc;border:1px solid var(--line);
+  border-radius:5px;cursor:pointer;font:inherit;font-size:12px}
+.opts button:hover{border-color:#5a5a5a}
+.opts button.on{border-color:var(--yellow);color:var(--yellow)}
+#hint{margin-top:20px;font-size:11px;color:#7a7a7a}
+#stage{position:relative;flex:1;min-width:0}
+canvas{display:block;width:100%;height:100%}
+#caption{position:absolute;left:0;right:0;bottom:0;display:none;padding:14px 20px;
+  background:linear-gradient(transparent,rgba(0,0,0,.82));font-size:13px}
+#caption b{color:var(--yellow);letter-spacing:.06em}
+#caption span{color:#bbb;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+body.shot #side{display:none}
+body.shot #caption{display:block}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <h1>HASZCZE 3D</h1>
+    <p class="sub">Podgląd modeli z <code>stl/</code></p>
+    <div id="list"></div>
+    <h2>Model</h2>
+    <dl id="meta"></dl>
+    <h2>Widok</h2>
+    <div class="opts">
+      <button id="spin">Obrót</button>
+      <button id="reset">Reset</button>
+      <button id="col">Kolor</button>
+    </div>
+    <p id="hint">Przeciągnij - obrót. Kółko - zoom.<br>Prawy przycisk / shift - przesuwanie.</p>
+  </aside>
+  <div id="stage">
+    <canvas id="gl"></canvas>
+    <div id="caption"><b id="capName"></b> <span id="capMeta"></span></div>
+  </div>
+</div>
+<script>
+window.HZ_MODELS = /*MODELS*/;
+</script>
+<script>
+(function(){
+"use strict";
+var MODELS = window.HZ_MODELS, YELLOW = [0.961,0.769,0.0], GREY = [0.72,0.74,0.78];
+
+function b64f32(s){
+  var bin = atob(s), n = bin.length, b = new Uint8Array(n);
+  for (var i=0;i<n;i++) b[i] = bin.charCodeAt(i);
+  return b.buffer;
+}
+
+var cv = document.getElementById("gl");
+var gl = cv.getContext("webgl2", {antialias:true, preserveDrawingBuffer:true});
+if (!gl) { document.getElementById("stage").innerHTML =
+  "<p style='padding:24px'>Brak WebGL2 w tej przeglądarce.</p>"; return; }
+
+var VS = "#version 300 es\n" +
+  "in vec3 p; uniform mat4 mvp; uniform mat4 mv; out vec3 v;" +
+  "void main(){ v=(mv*vec4(p,1.0)).xyz; gl_Position=mvp*vec4(p,1.0); }";
+var FS = "#version 300 es\nprecision highp float;\n" +
+  "in vec3 v; out vec4 o; uniform vec3 col;" +
+  "void main(){" +
+  " vec3 n=normalize(cross(dFdx(v),dFdy(v)));" +
+  " if(n.z<0.0) n=-n;" +
+  " float key=max(dot(n,normalize(vec3(-0.55,0.5,0.45))),0.0);" +
+  " float fill=max(dot(n,normalize(vec3(0.6,-0.3,0.4))),0.0);" +
+  " float rim=pow(1.0-max(n.z,0.0),3.0);" +
+  " vec3 c=col*(0.20+0.78*key+0.22*fill)+vec3(0.35,0.36,0.4)*rim*0.5;" +
+  " o=vec4(pow(clamp(c,0.0,1.0),vec3(0.4545)),1.0); }";
+
+function shader(type, src){
+  var s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+var prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS));
+gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS));
+gl.bindAttribLocation(prog, 0, "p");
+gl.linkProgram(prog);
+gl.useProgram(prog);
+var uMVP = gl.getUniformLocation(prog,"mvp"),
+    uMV  = gl.getUniformLocation(prog,"mv"),
+    uCol = gl.getUniformLocation(prog,"col");
+gl.enable(gl.DEPTH_TEST);
+gl.enable(gl.CULL_FACE);
+
+// --- minimal mat4 helpers (column-major, as WebGL wants) ---
+function perspective(fovy, aspect, near, far){
+  var f = 1/Math.tan(fovy/2), nf = 1/(near-far);
+  return [f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0];
+}
+function lookAt(eye, center, up){
+  var z = norm(sub(eye,center)), x = norm(cross(up,z)), y = cross(z,x);
+  return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+          -dot(x,eye),-dot(y,eye),-dot(z,eye),1];
+}
+function mul(a,b){
+  var o = new Array(16);
+  for (var c=0;c<4;c++) for (var r=0;r<4;r++){
+    var s=0; for (var k=0;k<4;k++) s += a[k*4+r]*b[c*4+k];
+    o[c*4+r]=s;
+  }
+  return o;
+}
+function sub(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function norm(a){var l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];}
+
+var current = null, view = null, spinning = false, useYellow = true;
+
+function upload(m){
+  if (m.gpu) return m.gpu;
+  var pos = new Float32Array(b64f32(m.pos)), idx = new Uint32Array(b64f32(m.idx));
+  var vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+  var vb = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+  gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+  var ib = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
+  m.gpu = {vao:vao, count:idx.length};
+  return m.gpu;
+}
+
+function resetView(){
+  var s = current.size;
+  view = {yaw:-0.9, pitch:0.55, dist:Math.max(s[0],s[1],s[2])*1.9, panx:0, pany:0};
+}
+
+function draw(){
+  var w = cv.clientWidth || 900, h = cv.clientHeight || 600,
+      dpr = Math.min(window.devicePixelRatio||1, 2);
+  cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+  gl.viewport(0,0,cv.width,cv.height);
+  gl.clearColor(0.102,0.102,0.102,1);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  if (!current) return;
+
+  var c = current.center;
+  var cp = Math.cos(view.pitch), d = view.dist;
+  var eye = [c[0]+d*cp*Math.cos(view.yaw), c[1]+d*cp*Math.sin(view.yaw),
+             c[2]+d*Math.sin(view.pitch)];
+  var target = [c[0]+view.panx, c[1], c[2]+view.pany];
+  eye = [eye[0]+view.panx, eye[1], eye[2]+view.pany];
+  var mv = lookAt(eye, target, [0,0,1]);
+  var pr = perspective(0.7, cv.width/cv.height, d*0.02, d*8);
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(uMV, false, new Float32Array(mv));
+  gl.uniformMatrix4fv(uMVP, false, new Float32Array(mul(pr,mv)));
+  gl.uniform3fv(uCol, useYellow ? YELLOW : GREY);
+  var g = upload(current);
+  gl.bindVertexArray(g.vao);
+  gl.drawElements(gl.TRIANGLES, g.count, gl.UNSIGNED_INT, 0);
+}
+
+function loop(){
+  if (spinning) { view.yaw += 0.006; draw(); }
+  requestAnimationFrame(loop);
+}
+
+function fmt(n){ return n.toLocaleString("pl-PL"); }
+
+function select(m){
+  current = m; resetView(); draw();
+  [].forEach.call(document.querySelectorAll(".mbtn"), function(b){
+    b.classList.toggle("on", b.dataset.name === m.name);
+  });
+  document.getElementById("meta").innerHTML =
+    row("plik", m.file) +
+    row("rozmiar", fmt(Math.round(m.bytes/1024)) + " kB") +
+    row("trójkąty", fmt(m.tris)) +
+    row("wymiary", m.size.map(function(v){return v.toFixed(1);}).join(" x ") + " mm") +
+    row("commit", m.commit.hash + (m.commit.dirty ? " (zmieniony)" : "")) +
+    row("data", m.commit.date) +
+    // Label this for what it is: the message of the commit that last touched
+    // the file, which need not say anything about the model itself.
+    row("commit message", m.commit.subject);
+  document.getElementById("capName").textContent = m.file;
+  document.getElementById("capMeta").textContent =
+    m.commit.hash + " - " + m.commit.date + " - " +
+    m.size.map(function(v){return v.toFixed(1);}).join(" x ") + " mm - " +
+    fmt(m.tris) + " tri";
+}
+function row(k,v){ return "<dt>"+k+"</dt><dd>"+String(v).replace(/</g,"&lt;")+"</dd>"; }
+
+var list = document.getElementById("list");
+MODELS.forEach(function(m){
+  var b = document.createElement("button");
+  b.className = "mbtn"; b.dataset.name = m.name;
+  b.innerHTML = "<b>"+m.file+"</b><small>"+fmt(m.tris)+" trójkątów - "+m.commit.hash+"</small>";
+  b.onclick = function(){ select(m); };
+  list.appendChild(b);
+});
+
+var drag = null;
+cv.addEventListener("pointerdown", function(e){
+  drag = {x:e.clientX, y:e.clientY, pan:e.button===2||e.shiftKey};
+  cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener("pointermove", function(e){
+  if (!drag) return;
+  var dx = e.clientX-drag.x, dy = e.clientY-drag.y;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (drag.pan) { view.panx -= dx*view.dist*0.0015; view.pany += dy*view.dist*0.0015; }
+  else {
+    view.yaw -= dx*0.008;
+    view.pitch = Math.max(-1.5, Math.min(1.5, view.pitch + dy*0.008));
+  }
+  draw();
+});
+cv.addEventListener("pointerup", function(){ drag = null; });
+cv.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+cv.addEventListener("wheel", function(e){
+  e.preventDefault();
+  view.dist *= Math.exp(e.deltaY*0.001);
+  draw();
+}, {passive:false});
+window.addEventListener("resize", draw);
+
+document.getElementById("spin").onclick = function(){
+  spinning = !spinning; this.classList.toggle("on", spinning);
+};
+document.getElementById("reset").onclick = function(){ resetView(); draw(); };
+document.getElementById("col").onclick = function(){
+  useYellow = !useYellow; this.classList.toggle("on", !useYellow); draw();
+};
+
+var q = new URLSearchParams(location.search);
+var shot = q.get("shot");
+var pick = MODELS.filter(function(m){ return m.name === shot; })[0] || MODELS[0];
+select(pick);
+if (shot) {
+  document.body.classList.add("shot");
+  if (q.get("yaw")) view.yaw = parseFloat(q.get("yaw"));
+  if (q.get("pitch")) view.pitch = parseFloat(q.get("pitch"));
+  draw();
+  // Chrome's --screenshot fires after load; draw once more next frame so the
+  // canvas is guaranteed to hold the final image at capture time.
+  requestAnimationFrame(draw);
+} else {
+  loop();
+}
+})();
+</script>
+</body>
+</html>
