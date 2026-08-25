@@ -24,6 +24,21 @@
   }
   h1 { margin: 0; color: var(--hs-yellow); font-size: 1.6rem; }
   header p { margin: 6px 0 0; opacity: .7; font-size: .9rem; }
+  .section-title {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    padding: 0 16px;
+    font-size: 1.1rem;
+    color: var(--hs-yellow);
+  }
+  .section-title span {
+    display: block;
+    font-size: .8rem;
+    color: var(--hs-light);
+    opacity: .65;
+    font-weight: 400;
+    margin-top: 2px;
+  }
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -57,10 +72,14 @@
     height: 100%;
   }
   .frame img { object-fit: contain; }
-  .mask {
-    background: #e11;
+  .mask { background: #e11; }
+  .mask.base {
     -webkit-mask: url(haszcze-logo.svg) center / contain no-repeat;
     mask: url(haszcze-logo.svg) center / contain no-repeat;
+  }
+  .mask.supported-a {
+    -webkit-mask: url(haszcze-logo-supported-A.svg) center / contain no-repeat;
+    mask: url(haszcze-logo-supported-A.svg) center / contain no-repeat;
   }
   .actions {
     display: flex;
@@ -77,18 +96,22 @@
     font-size: .85rem;
     text-decoration: none;
   }
-  .btn:hover { background: #FDE047; }</style>
+  .btn:hover { background: #FDE047; }
+</style>
 </head>
 <body>
 <header>
   <h1>Logo HASZCZE - Hackerspace Szczecin</h1>
-  <p>Oryginał i wektorowe wersje logo do pobrania</p>
+  <p>Wektorowe wersje logo do pobrania</p>
 </header>
 
+<h2 class="section-title">Wersja standardowa
+  <span>bez poprzeczki pod literą A</span>
+</h2>
 <div class="grid">
   <div class="card">
-    <h2>Oryginał PNG (1254x1254)</h2>
-    <div class="frame"><img src="haszcze-logo.png" alt="Oryginalne logo PNG"></div>
+    <h2>Raster PNG (1254x1254)</h2>
+    <div class="frame"><img src="haszcze-logo.png" alt="Logo, raster PNG"></div>
     <div class="actions"><a class="btn" href="haszcze-logo.png" download>Pobierz PNG</a></div>
   </div>
 
@@ -100,9 +123,7 @@
 
   <div class="card">
     <h2>Inny wariant kolorystyczny</h2>
-    <div class="frame">
-      <div class="mask"></div>
-    </div>
+    <div class="frame"><div class="mask base"></div></div>
   </div>
 
   <div class="card">
@@ -115,6 +136,34 @@
     <h2>Paski żółto-czarne (jak stare logo)</h2>
     <div class="frame"><img src="haszcze-logo-stripes.svg" alt="Wektor w paski żółto-czarne"></div>
     <div class="actions"><a class="btn" href="haszcze-logo-stripes.svg" download>Pobierz SVG</a></div>
+  </div>
+</div>
+
+<h2 class="section-title">Wersja z poprzeczką
+  <span>dźwig z poprzeczką podtrzymującą literę A</span>
+</h2>
+<div class="grid">
+  <div class="card">
+    <h2>Wektor SVG - czarny, przezroczyste tło</h2>
+    <div class="frame"><img src="haszcze-logo-supported-A.svg" alt="Wektor SVG czarny, z poprzeczką pod A"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo-supported-A.svg" download>Pobierz SVG</a></div>
+  </div>
+
+  <div class="card">
+    <h2>Inny wariant kolorystyczny</h2>
+    <div class="frame"><div class="mask supported-a"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Żółty na czarnym (paleta strony)</h2>
+    <div class="frame dark"><img src="haszcze-logo-supported-A-yellow-on-black.svg" alt="Wektor żółty na czarnym, z poprzeczką pod A"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo-supported-A-yellow-on-black.svg" download>Pobierz SVG</a></div>
+  </div>
+
+  <div class="card">
+    <h2>Paski żółto-czarne (jak stare logo)</h2>
+    <div class="frame"><img src="haszcze-logo-supported-A-stripes.svg" alt="Wektor w paski żółto-czarne, z poprzeczką pod A"></div>
+    <div class="actions"><a class="btn" href="haszcze-logo-supported-A-stripes.svg" download>Pobierz SVG</a></div>
   </div>
 </div>
 </body>
